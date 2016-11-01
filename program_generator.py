@@ -22,6 +22,30 @@ COMPARATORS = ('<', '>')
 OPERATORS = ('+', '-')
 VARIABLE_NAMES = list('abcdefgh')
 
+# https://stackoverflow.com/questions/3906232/python-get-the-print-output-in-an-exec-statement
+import sys
+#import StringIO
+import contextlib
+
+@contextlib.contextmanager
+def stdoutIO(stdout=None):
+    old = sys.stdout
+    if stdout is None:
+        stdout = io.StringIO()
+        #stdout = StringIO.StringIO()
+    sys.stdout = stdout
+    yield stdout
+    sys.stdout = old
+
+
+def execute(program):
+    with stdoutIO() as ss:# buf, redirect_stdout(buf):
+        print (10)
+        exec(program)
+        result = ss.getvalue()
+        print (result)
+        return result
+    
 
 def if_operation(variables, nesting, difficulty):
     compare_variable = choice(list(variables))
@@ -155,10 +179,26 @@ class ProgramGenerator():
 
         # Execute the programs to get the targets
         results = []
+        print (158)
+        print (programs)
         for program in programs:
-            with io.StringIO() as buf, redirect_stdout(buf):
-                exec(program)
-                results.append(buf.getvalue()[:-1])
+            print(5)
+            #print(program.replace('print', 'result='))
+            #exec(program.replace('print', 'result='))
+            result = execute(program)
+            results.append(result)
+            print (program)
+            #print (results)
+            if 0:
+                with stdoutIO() as ss:# buf, redirect_stdout(buf):
+                    print (10)
+                    exec(program)
+                    #result = buf.getvalue()[:-1]
+                    result = ss.getvalue()
+                    results.append(result)
+                    print (program)
+                    print (result)
+        print (166)
 
         input_sequences = encode_sequences(programs,
                                            symbol_to_idx=SYMBOL_TO_IDX,
@@ -180,3 +220,7 @@ class ProgramGenerator():
                                             num_classes=len(SYMBOL_TO_IDX))
 
         return input_sequences, target_sequences
+
+if 1:
+    p = ProgramGenerator(batch_size=10, program_length=8, num_len=3)
+    p.next_batch()
